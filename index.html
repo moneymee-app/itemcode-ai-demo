@@ -412,6 +412,7 @@
                   <button class="chip-btn" onclick="quickReply('สร้างรหัสสินค้าใหม่')">🆕 สร้างรหัสสินค้าใหม่</button>
                   <button class="chip-btn" onclick="quickReply('ตรวจสอบว่ารหัสนี้ซ้ำไหม')">🔍 ตรวจสอบรหัสซ้ำ</button>
                   <button class="chip-btn" onclick="quickReply('เพิ่มกลุ่มสินค้าใหม่')">📁 เพิ่มกลุ่มสินค้าใหม่</button>
+                  <button class="chip-btn" onclick="quickReply('นำเข้าข้อมูลสินค้าเก่าทั้งชุด')">📥 นำเข้าข้อมูลเก่าทั้งชุด</button>
                   <button class="chip-btn" onclick="quickReply('ดูประวัติการแก้ไขล่าสุด')">🕘 ดูประวัติล่าสุด</button>
                 </div>
                 <div class="msg-time">09:14</div>
@@ -667,6 +668,8 @@
   }
   function removeTyping(){ const t = document.getElementById('typingRow'); if(t) t.remove(); }
 
+  let importMode = false;
+
   function buildCodeCard(){
     return `
       <div class="rich-card">
@@ -687,12 +690,36 @@
       </div>`;
   }
 
+  function buildBatchImportCard(){
+    return `
+      <div class="rich-card">
+        <div style="font-size:10.5px; color:var(--text-dimmer); text-transform:uppercase; letter-spacing:.6px; margin-bottom:12px;">ผลการนำเข้า — 128 รายการ</div>
+        <div class="kpi-row">
+          <div class="kpi-box up"><div class="kn">98</div><div class="kl">จัดกลุ่มสำเร็จ</div></div>
+          <div class="kpi-box warn"><div class="kn">12</div><div class="kl">ต้องตรวจสอบ</div></div>
+          <div class="kpi-box"><div class="kn">18</div><div class="kl">เสนอกลุ่มใหม่</div></div>
+        </div>
+        <div class="status-row" style="margin-top:14px; padding-top:12px; flex-direction:column; align-items:flex-start; gap:8px;">
+          <div class="rule-preview-item" style="width:100%;"><span class="k">⚠️ แผ่นพลาสติกใส 1220×2440×5มม.</span><span class="v" style="color:var(--amber);">ไม่พบกลุ่มที่ตรง</span></div>
+          <div class="rule-preview-item" style="width:100%;"><span class="k">⚠️ มอเตอร์เกียร์ 3 แรงม้า ไม่ระบุยี่ห้อ</span><span class="v" style="color:var(--amber);">สเปกไม่ครบ</span></div>
+          <div class="rule-preview-item" style="width:100%;"><span class="k">✅ ท่อเหล็ก ASTM 3 นิ้ว Sch.40 × 84 รายการ</span><span class="v" style="color:var(--cyan);">จัดกลุ่ม PIPE แล้ว</span></div>
+        </div>
+        <div class="rich-actions">
+          <button class="btn btn-primary">✓ ยืนยันทั้งหมดที่มั่นใจ (98)</button>
+          <button class="btn btn-ghost">🔍 ตรวจทีละรายการที่เหลือ (30)</button>
+        </div>
+      </div>`;
+  }
+
   function quickReply(text){
     appendUser(text);
     appendTyping();
     setTimeout(()=>{
       removeTyping();
-      if(text.includes('สร้างรหัสสินค้าใหม่')){
+      if(text.includes('นำเข้าข้อมูลสินค้าเก่าทั้งชุด')){
+        importMode = true;
+        appendAI('ได้เลยครับ แนบไฟล์ Excel รายการสินค้าเก่ามาได้เลยที่ปุ่ม 📎 — ไม่ต้องจัดรูปแบบอะไรมาก ผมจะช่วยอ่าน จัดกลุ่ม ตรวจรหัสซ้ำ และเสนอ Item Code ให้ทั้งไฟล์ครับ');
+      } else if(text.includes('สร้างรหัสสินค้าใหม่')){
         appendAI('ได้เลยครับ ช่วยพิมพ์อธิบายสเปคชิ้นงาน หรือแนบเอกสาร/รูปสเปคมาได้เลย เช่น "ท่อเหล็กคาร์บอน ASTM ขนาด 2 นิ้ว หนา Sch.40" 📎');
       } else if(text.includes('ตรวจสอบว่ารหัสนี้ซ้ำไหม')){
         appendAI('พิมพ์รหัส หรืออธิบายสเปคที่จะเช็คได้เลยครับ ผมจะเทียบทั้งตัวอักษรและ "ความหมาย" ของสเปกกับฐานข้อมูล 1,204 รายการให้');
@@ -705,6 +732,19 @@
   }
 
   function attachFile(){
+    if(importMode){
+      appendUser(`<div class="file-card">
+          <div class="fic">📊</div>
+          <div><div class="fname">รายการสินค้าเก่า_คลังABC.xlsx</div><div class="fsize">128 แถว · ไฟล์แนบ</div></div>
+        </div>`);
+      appendTyping();
+      setTimeout(()=>{
+        removeTyping();
+        appendAI('อ่านไฟล์แล้วครับ ✅ กำลังจับคู่แต่ละแถวกับกลุ่มสินค้าที่มีอยู่ ตรวจรหัสซ้ำ และแยกรายการที่ข้อมูลยังไม่ครบ ผลสรุปดังนี้ครับ' + buildBatchImportCard());
+        importMode = false;
+      }, 1600);
+      return;
+    }
     appendUser(`<div class="file-card">
         <div class="fic">📄</div>
         <div><div class="fname">ใบเสนอราคา_ท่อเหล็ก_ABC.pdf</div><div class="fsize">248 KB · ไฟล์แนบ</div></div>

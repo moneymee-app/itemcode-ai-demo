@@ -670,7 +670,7 @@
 
   /* ---------- เชื่อมกับ Backend จริง (Claude API + Firestore) ---------- */
   const BACKEND_URL = "https://asia-southeast1-itemcode-ai.cloudfunctions.net/chat";
-  let chatHistory = []; // เก็บบทสนทนาไว้ฝั่งเว็บ ส่งกลับไปให้ Backend ทุกครั้ง
+  let sessionId = null; // Backend เป็นคนเก็บประวัติจริงใน Firestore ฝั่งนี้แค่ถือรหัสห้องไว้
 
   function escapeHtml(str){
     return String(str)
@@ -686,7 +686,7 @@
       const res = await fetch(BACKEND_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userText, history: chatHistory, user: "TaBon" }),
+        body: JSON.stringify({ message: userText, sessionId: sessionId, user: "TaBon" }),
       });
       const data = await res.json();
       removeTyping();
@@ -694,7 +694,7 @@
         appendAI("⚠️ เกิดข้อผิดพลาด: " + escapeHtml(data.error));
         return;
       }
-      chatHistory = data.history || chatHistory;
+      sessionId = data.sessionId || sessionId;
       appendAI(escapeHtml(data.reply || "").replace(/\n/g, "<br>"));
     } catch (err) {
       removeTyping();

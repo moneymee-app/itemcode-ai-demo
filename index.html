@@ -668,105 +668,60 @@
   }
   function removeTyping(){ const t = document.getElementById('typingRow'); if(t) t.remove(); }
 
-  let importMode = false;
+  /* ---------- เชื่อมกับ Backend จริง (Claude API + Firestore) ---------- */
+  const BACKEND_URL = "https://asia-southeast1-itemcode-ai.cloudfunctions.net/chat";
+  let chatHistory = []; // เก็บบทสนทนาไว้ฝั่งเว็บ ส่งกลับไปให้ Backend ทุกครั้ง
 
-  function buildCodeCard(){
-    return `
-      <div class="rich-card">
-        <div style="font-size:10.5px; color:var(--text-dimmer); text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px;">Item Code ที่ประกอบให้</div>
-        <div class="segments">
-          <div class="seg cat"><div class="schar">PIPE</div><div class="slabel">กลุ่มสินค้า</div></div>
-          <div class="seg std"><div class="schar">01</div><div class="slabel">มาตรฐาน</div></div>
-          <div class="seg spec"><div class="schar">02.0SC40</div><div class="slabel">ขนาด/สเปก</div></div>
-        </div>
-        <div class="status-row" style="margin-top:12px; padding-top:12px;">
-          <span class="badge ok"><span class="b-dot"></span>ไม่พบรหัสซ้ำในระบบ</span>
-          <span style="color:var(--text-dimmer); font-size:11px;">เทียบกับ 1,204 รายการ</span>
-        </div>
-        <div class="rich-actions">
-          <button class="btn btn-primary">✓ ยืนยันสร้างรหัสนี้</button>
-          <button class="btn btn-ghost">✏️ แก้ไขสเปค</button>
-        </div>
-      </div>`;
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
 
-  function buildBatchImportCard(){
-    return `
-      <div class="rich-card">
-        <div style="font-size:10.5px; color:var(--text-dimmer); text-transform:uppercase; letter-spacing:.6px; margin-bottom:12px;">ผลการนำเข้า — 128 รายการ</div>
-        <div class="kpi-row">
-          <div class="kpi-box up"><div class="kn">98</div><div class="kl">จัดกลุ่มสำเร็จ</div></div>
-          <div class="kpi-box warn"><div class="kn">12</div><div class="kl">ต้องตรวจสอบ</div></div>
-          <div class="kpi-box"><div class="kn">18</div><div class="kl">เสนอกลุ่มใหม่</div></div>
-        </div>
-        <div class="status-row" style="margin-top:14px; padding-top:12px; flex-direction:column; align-items:flex-start; gap:8px;">
-          <div class="rule-preview-item" style="width:100%;"><span class="k">⚠️ แผ่นพลาสติกใส 1220×2440×5มม.</span><span class="v" style="color:var(--amber);">ไม่พบกลุ่มที่ตรง</span></div>
-          <div class="rule-preview-item" style="width:100%;"><span class="k">⚠️ มอเตอร์เกียร์ 3 แรงม้า ไม่ระบุยี่ห้อ</span><span class="v" style="color:var(--amber);">สเปกไม่ครบ</span></div>
-          <div class="rule-preview-item" style="width:100%;"><span class="k">✅ ท่อเหล็ก ASTM 3 นิ้ว Sch.40 × 84 รายการ</span><span class="v" style="color:var(--cyan);">จัดกลุ่ม PIPE แล้ว</span></div>
-        </div>
-        <div class="rich-actions">
-          <button class="btn btn-primary">✓ ยืนยันทั้งหมดที่มั่นใจ (98)</button>
-          <button class="btn btn-ghost">🔍 ตรวจทีละรายการที่เหลือ (30)</button>
-        </div>
-      </div>`;
+  async function askAI(userText){
+    appendUser(escapeHtml(userText).replace(/\n/g, "<br>"));
+    appendTyping();
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userText, history: chatHistory, user: "TaBon" }),
+      });
+      const data = await res.json();
+      removeTyping();
+      if (data.error) {
+        appendAI("⚠️ เกิดข้อผิดพลาด: " + escapeHtml(data.error));
+        return;
+      }
+      chatHistory = data.history || chatHistory;
+      appendAI(escapeHtml(data.reply || "").replace(/\n/g, "<br>"));
+    } catch (err) {
+      removeTyping();
+      appendAI(
+        "⚠️ เชื่อมต่อ Backend ไม่ได้ครับ เช็คว่าเปิดเน็ตอยู่ หรือ URL Backend ยังใช้งานได้ปกติไหม (" +
+          escapeHtml(String(err)) +
+          ")"
+      );
+    }
   }
 
   function quickReply(text){
-    appendUser(text);
-    appendTyping();
-    setTimeout(()=>{
-      removeTyping();
-      if(text.includes('นำเข้าข้อมูลสินค้าเก่าทั้งชุด')){
-        importMode = true;
-        appendAI('ได้เลยครับ แนบไฟล์ Excel รายการสินค้าเก่ามาได้เลยที่ปุ่ม 📎 — ไม่ต้องจัดรูปแบบอะไรมาก ผมจะช่วยอ่าน จัดกลุ่ม ตรวจรหัสซ้ำ และเสนอ Item Code ให้ทั้งไฟล์ครับ');
-      } else if(text.includes('สร้างรหัสสินค้าใหม่')){
-        appendAI('ได้เลยครับ ช่วยพิมพ์อธิบายสเปคชิ้นงาน หรือแนบเอกสาร/รูปสเปคมาได้เลย เช่น "ท่อเหล็กคาร์บอน ASTM ขนาด 2 นิ้ว หนา Sch.40" 📎');
-      } else if(text.includes('ตรวจสอบว่ารหัสนี้ซ้ำไหม')){
-        appendAI('พิมพ์รหัส หรืออธิบายสเปคที่จะเช็คได้เลยครับ ผมจะเทียบทั้งตัวอักษรและ "ความหมาย" ของสเปกกับฐานข้อมูล 1,204 รายการให้');
-      } else if(text.includes('เพิ่มกลุ่มสินค้าใหม่')){
-        appendAI('เปิดหน้าตั้งค่ากลุ่มสินค้าให้แล้วครับ 👉 <a href="#" onclick="showScreen(\'groups\'); return false;" style="color:var(--violet); text-decoration:underline;">ไปที่หน้ากลุ่มสินค้า &amp; กฎเกณฑ์</a>');
-      } else {
-        appendAI('เปิดหน้าประวัติให้แล้วครับ 👉 <a href="#" onclick="showScreen(\'history\'); return false;" style="color:var(--violet); text-decoration:underline;">ไปที่หน้าประวัติ &amp; Audit Log</a>');
-      }
-    }, 700);
+    askAI(text);
   }
 
   function attachFile(){
-    if(importMode){
-      appendUser(`<div class="file-card">
-          <div class="fic">📊</div>
-          <div><div class="fname">รายการสินค้าเก่า_คลังABC.xlsx</div><div class="fsize">128 แถว · ไฟล์แนบ</div></div>
-        </div>`);
-      appendTyping();
-      setTimeout(()=>{
-        removeTyping();
-        appendAI('อ่านไฟล์แล้วครับ ✅ กำลังจับคู่แต่ละแถวกับกลุ่มสินค้าที่มีอยู่ ตรวจรหัสซ้ำ และแยกรายการที่ข้อมูลยังไม่ครบ ผลสรุปดังนี้ครับ' + buildBatchImportCard());
-        importMode = false;
-      }, 1600);
-      return;
-    }
-    appendUser(`<div class="file-card">
-        <div class="fic">📄</div>
-        <div><div class="fname">ใบเสนอราคา_ท่อเหล็ก_ABC.pdf</div><div class="fsize">248 KB · ไฟล์แนบ</div></div>
-      </div>`);
-    appendTyping();
-    setTimeout(()=>{
-      removeTyping();
-      appendAI('อ่านเอกสารแล้วครับ ✅ พบสเปค <b>"ท่อเหล็กคาร์บอนไม่มีตะเข็บ ASTM ขนาด 2 นิ้ว หนา Sch.40"</b> ในใบเสนอราคานี้ 3 รายการ ผมประกอบรหัสให้รายการแรกดังนี้ครับ' + buildCodeCard());
-    }, 1300);
+    appendAI(
+      "ตอนนี้ยังไม่รองรับการอ่านไฟล์แนบโดยตรงนะครับ (ฟีเจอร์นี้ยังไม่ได้ต่อกับ Backend) — ช่วยพิมพ์อธิบายสเปคหรือรายละเอียดที่อยู่ในเอกสารมาเป็นข้อความแทนได้เลยครับ ผมช่วยวิเคราะห์ให้จากตรงนี้ก่อน"
+    );
   }
 
   function sendChat(){
-    const input = document.getElementById('chatInput');
+    const input = document.getElementById("chatInput");
     const text = input.value.trim();
-    if(!text) return;
-    appendUser(text);
-    input.value = '';
-    appendTyping();
-    setTimeout(()=>{
-      removeTyping();
-      appendAI('รับทราบครับ กำลังแยกฟิลด์จากสเปคที่พิมพ์มา และประกอบรหัสให้ ดังนี้ครับ' + buildCodeCard());
-    }, 900);
+    if (!text) return;
+    input.value = "";
+    askAI(text);
   }
 
   document.getElementById('chatInput').addEventListener('keydown', function(e){

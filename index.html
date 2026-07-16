@@ -395,7 +395,7 @@
           <div class="greet">สวัสดีครับ TaBon 👋</div>
           <div class="page-sub">วันนี้อยากให้ผมช่วยเรื่องอะไรครับ — คุยกับ AI เพื่อสร้าง ตรวจสอบ หรือจัดการ Item Code ได้เลย</div>
         </div>
-        <div class="btn btn-primary">＋ สร้างรหัสด่วน</div>
+        <div class="btn btn-primary" onclick="quickCreateFromAnywhere()">＋ สร้างรหัสด่วน</div>
       </div>
 
       <div class="gen-cols">
@@ -466,46 +466,13 @@
         <div>
           <div class="crumb">ItemCode AI / กลุ่มสินค้า</div>
           <div class="greet" style="font-size:23px;">กลุ่มสินค้า &amp; กฎเกณฑ์การสร้างรหัส</div>
-          <div class="page-sub">แต่ละกลุ่มมีรูปภาพอ้างอิง กฎโครงสร้างหลัก และมาตรฐานที่อนุญาตของตัวเอง</div>
+          <div class="page-sub">แต่ละกลุ่มมีโครงสร้างรหัส 14 หลัก และตารางมาตรฐานของตัวเอง ดึงจากฐานข้อมูลจริง</div>
         </div>
-        <div class="btn btn-primary">+ เพิ่มกลุ่มสินค้าใหม่</div>
+        <div class="btn btn-primary" onclick="quickCreateFromAnywhere('เพิ่มกลุ่มสินค้าใหม่')">+ เพิ่มกลุ่มสินค้าใหม่</div>
       </div>
 
-      <div class="groups-grid">
-        <div class="group-card" onclick="showScreen('groupdetail')">
-          <div class="thumb">🧵</div>
-          <div class="gh"><span class="gcode2">PIPE</span><span class="gcount">248 รายการ</span></div>
-          <div class="gname2">ท่อเหล็ก (Piping)</div>
-          <div class="gtags"><span class="tag">โครงสร้าง 1</span><span class="tag">ASTM/JIS/มอก.</span></div>
-        </div>
-        <div class="group-card">
-          <div class="thumb">🔩</div>
-          <div class="gh"><span class="gcode2">WFBE</span><span class="gcount">86 รายการ</span></div>
-          <div class="gname2">Wide Flange / H-Beam</div>
-          <div class="gtags"><span class="tag">โครงสร้าง 1</span><span class="tag">มอก./JIS</span></div>
-        </div>
-        <div class="group-card">
-          <div class="thumb">⚙️</div>
-          <div class="gh"><span class="gcode2">CONV</span><span class="gcount">34 รายการ</span></div>
-          <div class="gname2">Conveyor</div>
-          <div class="gtags"><span class="tag">โครงสร้าง 2 (BOM)</span><span class="tag">คลังสินค้าอัตโนมัติ</span></div>
-        </div>
-        <div class="group-card">
-          <div class="thumb">📡</div>
-          <div class="gh"><span class="gcode2">SENS</span><span class="gcount">61 รายการ</span></div>
-          <div class="gname2">เซนเซอร์ (Sensor)</div>
-          <div class="gtags"><span class="tag">โครงสร้าง 1</span><span class="tag">IEC</span></div>
-        </div>
-        <div class="group-card">
-          <div class="thumb">🏗️</div>
-          <div class="gh"><span class="gcode2">ASRS</span><span class="gcount">18 รายการ</span></div>
-          <div class="gname2">AS/RS Stacker</div>
-          <div class="gtags"><span class="tag">โครงสร้าง 2 (BOM)</span><span class="tag">คลังสินค้าอัตโนมัติ</span></div>
-        </div>
-        <div class="add-group-card">
-          <div class="plus">+</div>
-          <div>เพิ่มกลุ่มสินค้าใหม่</div>
-        </div>
+      <div class="groups-grid" id="groupsGridContainer">
+        <div style="color:var(--text-dim); font-size:13px; padding:20px;">กำลังโหลดกลุ่มสินค้าจาก Firestore...</div>
       </div>
     </div>
 
@@ -513,64 +480,53 @@
     <div class="screen" id="screen-groupdetail">
       <div class="topbar">
         <div>
-          <div class="crumb"><span onclick="showScreen('groups')" style="cursor:pointer; text-decoration:underline;">กลุ่มสินค้า</span> / PIPE</div>
-          <div class="greet" style="font-size:23px;">PIPE — ท่อเหล็ก (Piping)</div>
-          <div class="page-sub">แก้ไขกฎการตั้งรหัส รูปภาพอ้างอิง และมาตรฐานที่อนุญาตของกลุ่มนี้</div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <div class="btn btn-ghost">ลบกลุ่ม</div>
-          <div class="btn btn-primary">บันทึกการแก้ไข</div>
+          <div class="crumb"><span onclick="showScreen('groups')" style="cursor:pointer; text-decoration:underline;">กลุ่มสินค้า</span> / <span id="gdCrumbCode">-</span></div>
+          <div class="greet" style="font-size:23px;" id="gdTitle">กำลังโหลด...</div>
+          <div class="page-sub">โครงสร้างรหัส ตารางมาตรฐาน และสิทธิ์อนุมัติ — ดึงจากฐานข้อมูลจริง (อ่านอย่างเดียวในหน้านี้ แก้ไขได้ผ่านแชทกับ AI)</div>
         </div>
       </div>
 
       <div class="detail-head">
-        <div class="detail-thumb">🧵</div>
+        <div class="detail-thumb">📦</div>
         <div style="flex:1;">
           <div class="field-row">
-            <div class="field"><label>รหัสกลุ่ม (4 หลัก)</label><input type="text" value="PIPE"></div>
-            <div class="field"><label>ชื่อกลุ่ม</label><input type="text" value="ท่อเหล็ก (Piping)"></div>
+            <div class="field"><label>รหัสกลุ่ม (4 หลัก)</label><input type="text" id="gdCode" value="" disabled></div>
+            <div class="field"><label>ชื่อกลุ่ม</label><input type="text" id="gdName" value="" disabled></div>
           </div>
         </div>
       </div>
 
-      <div class="tabs">
-        <div class="tab active">โครงสร้างรหัส (Digit Rules)</div>
-        <div class="tab">รูปภาพอ้างอิง</div>
-        <div class="tab">มาตรฐาน &amp; สิทธิ์อนุมัติ</div>
-      </div>
-
-      <div class="grid" style="grid-template-columns:1.3fr .7fr;">
+      <div class="grid" style="grid-template-columns:1fr;">
         <div class="card">
-          <h3>ผังโครงสร้าง 14 หลัก ของกลุ่ม PIPE</h3>
-          <div class="hint">กำหนดความหมายของแต่ละช่วงหลัก — AI จะใช้ผังนี้ตอน Generate และตอนตรวจซ้ำ</div>
-          <div class="digit-map">
-            <div class="digit-row"><div class="digit-pos">หลัก 1-4</div><div class="digit-desc">กลุ่มสินค้าหลัก<div class="sub">ตายตัว = PIPE</div></div><div class="digit-example">PIPE</div></div>
-            <div class="digit-row"><div class="digit-pos">หลัก 5-6</div><div class="digit-desc">มาตรฐานสินค้า<div class="sub">เลือกจากรายการมาตรฐานที่อนุญาต</div></div><div class="digit-example">01</div></div>
-            <div class="digit-row"><div class="digit-pos">หลัก 7-8</div><div class="digit-desc">ขนาดท่อ (นิ้ว)<div class="sub">ทศนิยม 1 ตำแหน่ง เช่น 02.0</div></div><div class="digit-example">02.0</div></div>
-            <div class="digit-row"><div class="digit-pos">หลัก 9-14</div><div class="digit-desc">Schedule / ความหนา<div class="sub">เช่น SC40, SC80</div></div><div class="digit-example">SC40</div></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>เพิ่มรูปภาพอ้างอิงกลุ่ม</h3>
-          <div class="hint">ใช้ตอนแสดงผลในหน้า Generate และช่วย AI เทียบรูปตอนตรวจซ้ำ</div>
-          <div class="upload-box">📷 ลากรูปมาวาง หรือคลิกเพื่ออัปโหลด<br><span style="font-size:10.5px;">รองรับ JPG, PNG · สูงสุด 5 รูป/กลุ่ม</span></div>
-          <div class="img-grid">
-            <div class="img-slot">🧵<span class="imgcap">ตัวอย่าง 1</span></div>
-            <div class="img-slot">📐<span class="imgcap">Drawing</span></div>
-            <div class="img-slot" style="border-style:dashed; color:var(--text-dimmer);">+</div>
+          <h3>ผังโครงสร้าง 14 หลัก</h3>
+          <div class="hint">ดึงจากฐานข้อมูลจริง — AI ใช้ผังนี้ตอน Generate และตอนตรวจซ้ำ</div>
+          <div class="digit-map" id="gdDigitMap">
+            <div style="color:var(--text-dim); font-size:12.5px;">กำลังโหลด...</div>
           </div>
         </div>
       </div>
 
       <div class="card" style="margin-top:16px;">
-        <h3>มาตรฐานที่อนุญาต &amp; สิทธิ์การอนุมัติ</h3>
-        <div class="hint">AI จะปฏิเสธ (Reject) รหัสที่เลือกมาตรฐานนอกเหนือจากนี้ทันที</div>
-        <div class="toggle-row"><span>ASTM</span><div class="switch on"><div class="knob"></div></div></div>
-        <div class="toggle-row"><span>JIS</span><div class="switch on"><div class="knob"></div></div></div>
-        <div class="toggle-row"><span>มอก.</span><div class="switch on"><div class="knob"></div></div></div>
-        <div class="toggle-row"><span>DIN</span><div class="switch"><div class="knob"></div></div></div>
-        <div class="toggle-row"><span>ต้องผ่านการอนุมัติจากผู้จัดการก่อนสร้างรหัสใหม่</span><div class="switch on"><div class="knob"></div></div></div>
+        <h3>ตารางรหัสมาตรฐาน (Standard Code Table)</h3>
+        <div class="hint">รหัสที่ใช้ในหลัก 5-6 ของกลุ่มนี้ — AI จะจับคู่จากตารางนี้ก่อนเสมอ ไม่เดาขึ้นมาเอง หากไม่มีรายการที่ตรงกัน AI จะเสนอเพิ่มรายการใหม่ผ่านแชท (ต้องยืนยันก่อนเพิ่มจริง)</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12.5px;" id="gdStandardTable">
+          <thead>
+            <tr style="text-align:left; color:var(--text-dim); border-bottom:1px solid var(--border);">
+              <th style="padding:8px 6px;">รหัส</th><th>มาตรฐาน</th><th>เกรด/ชนิด</th><th>หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody id="gdStandardTableBody">
+            <tr><td colspan="4" style="padding:12px 6px; color:var(--text-dim);">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>มาตรฐานที่อนุญาต</h3>
+        <div class="hint">AI จะปฏิเสธ (Reject) มาตรฐานนอกเหนือจากนี้ทันที</div>
+        <div id="gdAllowedStandards" style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div style="color:var(--text-dim); font-size:12.5px;">กำลังโหลด...</div>
+        </div>
       </div>
     </div>
 
@@ -637,6 +593,94 @@
     document.getElementById('screen-'+name).classList.add('active');
     const navItem = document.querySelector('.nav-item[data-screen="'+name+'"]');
     if(navItem) navItem.classList.add('active');
+    if(name === 'groups') loadGroupsScreen();
+  }
+
+  /* ---------- ดึงข้อมูลกลุ่มสินค้าจริงจาก Firestore (ไม่ใช่ Mockup แล้ว) ---------- */
+  const GROUPS_URL = "https://asia-southeast1-itemcode-ai.cloudfunctions.net/getGroups";
+  const GROUP_ICONS = {PIPE:"🧵", WFBE:"🔩", CONV:"⚙️", SENS:"📡", ASRS:"🏗️", SSHT:"🔲", PLAS:"🧊", STPL:"⬛"};
+
+  async function loadGroupsScreen(){
+    const container = document.getElementById('groupsGridContainer');
+    container.innerHTML = '<div style="color:var(--text-dim); font-size:13px; padding:20px;">กำลังโหลดกลุ่มสินค้าจาก Firestore...</div>';
+    try {
+      const res = await fetch(GROUPS_URL);
+      const data = await res.json();
+      if(data.error){ container.innerHTML = '<div style="color:var(--red); font-size:13px; padding:20px;">โหลดไม่สำเร็จ: '+escapeHtml(data.error)+'</div>'; return; }
+      const groups = data.groups || [];
+      let html = '';
+      groups.forEach(g => {
+        const icon = GROUP_ICONS[g.code] || '📦';
+        const structTag = g.structureType === 2 ? 'โครงสร้าง 2 (BOM)' : 'โครงสร้าง 1';
+        const stdTag = (g.allowedStandards || []).slice(0,3).join('/') || 'ไม่ระบุมาตรฐาน';
+        html += `<div class="group-card" onclick="openGroupDetail('${g.code}')">
+            <div class="thumb">${icon}</div>
+            <div class="gh"><span class="gcode2">${escapeHtml(g.code)}</span></div>
+            <div class="gname2">${escapeHtml(g.name || '')}</div>
+            <div class="gtags"><span class="tag">${structTag}</span><span class="tag">${escapeHtml(stdTag)}</span></div>
+          </div>`;
+      });
+      html += `<div class="add-group-card" onclick="quickCreateFromAnywhere('เพิ่มกลุ่มสินค้าใหม่')">
+          <div class="plus">+</div>
+          <div>เพิ่มกลุ่มสินค้าใหม่</div>
+        </div>`;
+      container.innerHTML = html;
+    } catch(err){
+      container.innerHTML = '<div style="color:var(--red); font-size:13px; padding:20px;">เชื่อมต่อ Backend ไม่ได้: '+escapeHtml(String(err))+'</div>';
+    }
+  }
+
+  async function openGroupDetail(code){
+    showScreen('groupdetail');
+    document.getElementById('gdCrumbCode').textContent = code;
+    document.getElementById('gdTitle').textContent = 'กำลังโหลด...';
+    document.getElementById('gdDigitMap').innerHTML = '<div style="color:var(--text-dim); font-size:12.5px;">กำลังโหลด...</div>';
+    document.getElementById('gdStandardTableBody').innerHTML = '<tr><td colspan="4" style="padding:12px 6px; color:var(--text-dim);">กำลังโหลด...</td></tr>';
+    document.getElementById('gdAllowedStandards').innerHTML = '<div style="color:var(--text-dim); font-size:12.5px;">กำลังโหลด...</div>';
+    try {
+      const res = await fetch(GROUPS_URL + '?code=' + encodeURIComponent(code));
+      const data = await res.json();
+      if(data.error){
+        document.getElementById('gdTitle').textContent = 'โหลดไม่สำเร็จ';
+        document.getElementById('gdDigitMap').innerHTML = '<div style="color:var(--red); font-size:12.5px;">'+escapeHtml(data.error)+'</div>';
+        return;
+      }
+      const g = data.group;
+      document.getElementById('gdTitle').textContent = g.code + ' — ' + (g.name || '');
+      document.getElementById('gdCode').value = g.code;
+      document.getElementById('gdName').value = g.name || '';
+
+      const rows = (g.digitStructure || []).map(d =>
+        `<div class="digit-row"><div class="digit-pos">หลัก ${escapeHtml(d.position)}</div><div class="digit-desc">${escapeHtml(d.meaning)}</div><div class="digit-example"></div></div>`
+      ).join('');
+      document.getElementById('gdDigitMap').innerHTML = rows || '<div style="color:var(--text-dim); font-size:12.5px;">ไม่มีข้อมูลโครงสร้าง</div>';
+
+      const table = g.standardCodeTable || [];
+      if(table.length){
+        document.getElementById('gdStandardTableBody').innerHTML = table.map(e =>
+          `<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 6px; font-family:'IBM Plex Mono'; color:var(--violet);">${escapeHtml(e.code)}</td>
+            <td>${escapeHtml(e.standard||'')}</td>
+            <td>${escapeHtml(e.grade||'-')}</td>
+            <td style="color:var(--text-dim);">${escapeHtml(e.note||'')}</td>
+          </tr>`
+        ).join('');
+      } else {
+        document.getElementById('gdStandardTableBody').innerHTML = '<tr><td colspan="4" style="padding:12px 6px; color:var(--text-dim);">กลุ่มนี้ยังไม่มีตารางรหัสมาตรฐาน</td></tr>';
+      }
+
+      const standards = g.allowedStandards || [];
+      document.getElementById('gdAllowedStandards').innerHTML = standards.length
+        ? standards.map(s => `<span class="tag" style="font-size:12px; padding:6px 12px;">${escapeHtml(s)}</span>`).join('')
+        : '<div style="color:var(--text-dim); font-size:12.5px;">ไม่มีข้อมูล</div>';
+    } catch(err){
+      document.getElementById('gdTitle').textContent = 'เชื่อมต่อ Backend ไม่ได้';
+    }
+  }
+
+  function quickCreateFromAnywhere(promptText){
+    showScreen('generate');
+    setTimeout(()=> quickReply(promptText || 'สร้างรหัสสินค้าใหม่'), 150);
   }
 
   /* ---------- Chat assistant logic ---------- */

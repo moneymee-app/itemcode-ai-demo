@@ -885,16 +885,22 @@
     const segments = (group.digitStructure || []).filter(d => d.position !== '1-4');
     let html = '';
     segments.forEach((seg, idx) => {
-      const isStandardField = /มาตรฐาน/.test(seg.meaning) && (group.standardCodeTable || []).length > 0;
       const fieldId = 'pickerField_' + idx;
-      if(isStandardField){
-        const options = group.standardCodeTable.map(e =>
-          `<option value="${escapeHtml(e.code)}" data-label="${escapeHtml((e.grade||e.standard||''))}">${escapeHtml(e.code)} — ${escapeHtml(e.standard||'')}${e.grade? ' '+escapeHtml(e.grade):''}</option>`
-        ).join('');
+      const isStandardField = /มาตรฐาน/.test(seg.meaning) && (group.standardCodeTable || []).length > 0;
+      const refTable = isStandardField ? group.standardCodeTable : (seg.codeTable || []);
+
+      if(refTable.length){
+        const options = refTable.map(e => {
+          const labelText = isStandardField
+            ? (e.standard||'') + (e.grade? ' '+e.grade : '')
+            : (e.label || '');
+          return `<option value="${escapeHtml(e.code)}">${escapeHtml(e.code)} — ${escapeHtml(labelText)}</option>`;
+        }).join('');
         html += `<div class="field">
             <label>หลัก ${escapeHtml(seg.position)} — ${escapeHtml(seg.meaning)}</label>
-            <select id="${fieldId}" data-fixed-length="${seg.position.includes('-')?'':''}" onchange="updatePickerPreview()">
+            <select id="${fieldId}" data-position="${escapeHtml(seg.position)}" data-is-standard="${isStandardField?'1':'0'}" onchange="onPickerFieldSelect(${idx})">
               <option value="">— เลือก —</option>${options}
+              <option value="__add_new__">➕ เพิ่มตัวเลือกใหม่...</option>
             </select>
           </div>`;
       } else {
@@ -906,6 +912,25 @@
     });
     fieldsContainer.innerHTML = html;
     document.getElementById('pickerPreviewWrap').style.display = '';
+    updatePickerPreview();
+  }
+
+  function onPickerFieldSelect(idx){
+    const el = document.getElementById('pickerField_' + idx);
+    if(el.value === '__add_new__'){
+      const position = el.dataset.position;
+      const isStandard = el.dataset.isStandard === '1';
+      const label = prompt('พิมพ์ตัวเลือกใหม่ที่ต้องการเพิ่ม (เช่น ชื่อมาตรฐาน/เกรด หรือความหมายของรหัสนี้):');
+      el.value = '';
+      if(!label || !label.trim()) return;
+      showRightPanel('stats');
+      const msg = isStandard
+        ? `ช่วยเพิ่มมาตรฐานใหม่เข้าตารางอ้างอิงของกลุ่ม ${pickerCurrentGroup.code}: "${label.trim()}" แล้วยืนยันกับผมก่อนเพิ่มจริง`
+        : `ช่วยเพิ่มตัวเลือกใหม่เข้าตารางอ้างอิงหลัก ${position} ของกลุ่ม ${pickerCurrentGroup.code}: "${label.trim()}" แล้วยืนยันกับผมก่อนเพิ่มจริง`;
+      askAI(msg);
+      alert('ส่งคำขอเพิ่มตัวเลือกให้ AI ตรวจสอบในแชทแล้วครับ — หลัง AI ยืนยันเพิ่มเสร็จ ลองเปิดแท็บ "เลือกโครงสร้างเอง" แล้วเลือกกลุ่มนี้ใหม่อีกครั้งเพื่อเห็นตัวเลือกที่เพิ่ม');
+      return;
+    }
     updatePickerPreview();
   }
 

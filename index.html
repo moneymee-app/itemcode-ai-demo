@@ -716,9 +716,17 @@
       document.getElementById('gdCode').value = g.code;
       document.getElementById('gdName').value = g.name || '';
 
-      const rows = (g.digitStructure || []).map(d =>
-        `<div class="digit-row"><div class="digit-pos">หลัก ${escapeHtml(d.position)}</div><div class="digit-desc">${escapeHtml(d.meaning)}</div><div class="digit-example"></div></div>`
-      ).join('');
+      const rows = (g.digitStructure || []).map(d => {
+        let extra = '';
+        if (d.codeTable && d.codeTable.length) {
+          extra = '<div style="padding:2px 0 10px 84px; display:flex; flex-wrap:wrap; gap:6px;">' +
+            d.codeTable.map(e =>
+              `<span class="tag" style="font-size:10.5px;"><span class="mono" style="color:var(--violet);">${escapeHtml(e.code)}</span> ${escapeHtml(e.label||'')}</span>`
+            ).join('') +
+            '</div>';
+        }
+        return `<div class="digit-row"><div class="digit-pos">หลัก ${escapeHtml(d.position)}</div><div class="digit-desc">${escapeHtml(d.meaning)}</div><div class="digit-example"></div></div>${extra}`;
+      }).join('');
       document.getElementById('gdDigitMap').innerHTML = rows || '<div style="color:var(--text-dim); font-size:12.5px;">ไม่มีข้อมูลโครงสร้าง</div>';
 
       const table = g.standardCodeTable || [];

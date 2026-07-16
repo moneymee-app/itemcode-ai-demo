@@ -146,6 +146,12 @@
     padding:10px 12px; border-radius:12px; font-size:13px; font-family:inherit;
   }
   select:focus, input:focus{ outline:none; border-color:var(--violet); }
+  /* เบราว์เซอร์ส่วนใหญ่โชว์รายการ dropdown ที่เปิดออกมาเป็นพื้นขาวเสมอ
+     ควบคุม CSS ธีมมืดไม่ได้เต็มที่ — บังคับสีตัวอักษร option ให้เข้ม
+     ชัดเจนบนพื้นขาว กันปัญหาอ่านไม่ออกแบบที่เจอ */
+  select option{
+    color:#1a1a1a; background:#ffffff;
+  }
   .field{ margin-bottom:16px; }
   .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 
@@ -367,6 +373,7 @@
 
     <div class="nav-group-label">งานหลัก</div>
     <div class="nav-item active" data-screen="generate"><span class="ic">💬</span>สร้างรหัสสินค้า</div>
+    <div class="nav-item" data-screen="dashboard"><span class="ic">📊</span>สรุปภาพรวม</div>
     <div class="nav-item" data-screen="groups"><span class="ic">📁</span>กลุ่มสินค้า &amp; กฎเกณฑ์</div>
     <div class="nav-item" data-screen="master"><span class="ic">🗂️</span>Master Data</div>
     <div class="nav-item" data-screen="history"><span class="ic">🕘</span>ประวัติ &amp; Audit Log</div>
@@ -427,40 +434,25 @@
           </div>
         </div>
 
-        <!-- RIGHT: stats / donut / structure picker -->
+        <!-- RIGHT: activity feed / structure picker -->
         <div>
           <div style="display:flex; gap:6px; margin-bottom:12px;">
-            <button class="chip-btn active" id="rightTabStats" onclick="showRightPanel('stats')" style="flex:1; text-align:center;">📊 สรุปวันนี้</button>
+            <button class="chip-btn active" id="rightTabStats" onclick="showRightPanel('stats')" style="flex:1; text-align:center;">🔔 กิจกรรมล่าสุด</button>
             <button class="chip-btn" id="rightTabPicker" onclick="showRightPanel('picker')" style="flex:1; text-align:center;">🧩 เลือกโครงสร้างเอง</button>
           </div>
 
           <div id="rightPanelStats">
             <div class="stats-card">
-              <div class="stats-head">
-                <h3>สรุปวันนี้</h3>
-                <span class="period-pill">15 ก.ค. 69</span>
+              <div class="stats-head"><h3>⏳ รออนุมัติ</h3></div>
+              <div id="activityPendingList">
+                <div class="hint">กำลังโหลด...</div>
               </div>
-              <div class="donut-wrap">
-                <div class="donut">
-                  <div class="donut-center">
-                    <div class="dv">42</div>
-                    <div class="dl">รหัสที่สร้าง</div>
-                  </div>
-                </div>
-              </div>
-              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet)"></span>Piping / เหล็กโครงสร้าง</span><span class="lv">44%</span></div>
-              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet-2)"></span>อิเล็กทรอนิกส์/Automation</span><span class="lv">21%</span></div>
-              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--cyan)"></span>เครื่องจักรคลังสินค้า</span><span class="lv">15%</span></div>
-              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:#4a453f"></span>อื่นๆ</span><span class="lv">20%</span></div>
             </div>
 
             <div class="stats-card">
-              <div class="stats-head"><h3>คุณภาพข้อมูล</h3></div>
-              <div class="kpi-row">
-                <div class="kpi-box up"><div class="kn">1,204</div><div class="kl">รหัสในระบบ</div></div>
-                <div class="kpi-box warn"><div class="kn">3</div><div class="kl">พบรหัสซ้ำวันนี้</div></div>
-                <div class="kpi-box up"><div class="kn">100%</div><div class="kl">Verified Hash</div></div>
-                <div class="kpi-box"><div class="kn">19</div><div class="kl">กลุ่มสินค้า</div></div>
+              <div class="stats-head"><h3>🕘 สร้างล่าสุด</h3></div>
+              <div id="activityRecentList">
+                <div class="hint">กำลังโหลด...</div>
               </div>
             </div>
           </div>
@@ -557,6 +549,48 @@
           <div style="color:var(--text-dim); font-size:12.5px;">กำลังโหลด...</div>
         </div>
       </div>
+    </div>
+
+    <!-- ============ SCREEN: DASHBOARD OVERVIEW (ย้ายมาจากแดชบอร์ดขวามือเดิม) ============ -->
+    <div class="screen" id="screen-dashboard">
+      <div class="topbar">
+        <div>
+          <div class="crumb">ItemCode AI / สรุปภาพรวม</div>
+          <div class="greet" style="font-size:23px;">สรุปภาพรวมระบบ</div>
+          <div class="page-sub">ภาพรวมการใช้งานทั้งระบบ</div>
+        </div>
+      </div>
+      <div class="gen-cols" style="grid-template-columns:1fr 1fr;">
+        <div class="stats-card">
+          <div class="stats-head">
+            <h3>สรุปวันนี้</h3>
+            <span class="period-pill">15 ก.ค. 69</span>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut">
+              <div class="donut-center">
+                <div class="dv">42</div>
+                <div class="dl">รหัสที่สร้าง</div>
+              </div>
+            </div>
+          </div>
+          <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet)"></span>Piping / เหล็กโครงสร้าง</span><span class="lv">44%</span></div>
+          <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet-2)"></span>อิเล็กทรอนิกส์/Automation</span><span class="lv">21%</span></div>
+          <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--cyan)"></span>เครื่องจักรคลังสินค้า</span><span class="lv">15%</span></div>
+          <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:#4a453f"></span>อื่นๆ</span><span class="lv">20%</span></div>
+        </div>
+
+        <div class="stats-card">
+          <div class="stats-head"><h3>คุณภาพข้อมูล</h3></div>
+          <div class="kpi-row">
+            <div class="kpi-box up"><div class="kn">1,204</div><div class="kl">รหัสในระบบ</div></div>
+            <div class="kpi-box warn"><div class="kn">3</div><div class="kl">พบรหัสซ้ำวันนี้</div></div>
+            <div class="kpi-box up"><div class="kn">100%</div><div class="kl">Verified Hash</div></div>
+            <div class="kpi-box"><div class="kn">19</div><div class="kl">กลุ่มสินค้า</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:16px;">⚠️ หมายเหตุ: ตัวเลขในหน้านี้ยังเป็นข้อมูลตัวอย่าง (Static) ยังไม่ได้คำนวณจากฐานข้อมูลจริงแบบเรียลไทม์ — แจ้งได้ถ้าต้องการให้ต่อเป็นข้อมูลจริง</div>
     </div>
 
     <!-- ============ SCREEN 4: MASTER DATA ============ -->
@@ -779,6 +813,41 @@
     document.getElementById('rightTabStats').classList.toggle('active', which==='stats');
     document.getElementById('rightTabPicker').classList.toggle('active', which==='picker');
     if(which==='picker' && pickerGroupsCache.length===0) loadPickerGroupList();
+    if(which==='stats') loadActivityPanel();
+  }
+
+  const ACTIVITY_URL = "https://asia-southeast1-itemcode-ai.cloudfunctions.net/getActivity";
+
+  async function loadActivityPanel(){
+    const pendingEl = document.getElementById('activityPendingList');
+    const recentEl = document.getElementById('activityRecentList');
+    try {
+      const res = await fetch(ACTIVITY_URL);
+      const data = await res.json();
+      if(data.error){ pendingEl.innerHTML = '<div class="hint" style="color:var(--red);">'+escapeHtml(data.error)+'</div>'; return; }
+
+      const drafts = data.pendingDrafts || [];
+      pendingEl.innerHTML = drafts.length
+        ? drafts.map(d => `<div class="rule-preview-item">
+              <span class="k">${escapeHtml(d.groupCode||'?')} — ${escapeHtml(d.name||'')}</span>
+              <span class="badge warn" style="padding:2px 8px;">รออนุมัติ</span>
+            </div>`).join('')
+        : '<div class="hint">ไม่มีรายการรออนุมัติตอนนี้</div>';
+
+      const items = data.recentItems || [];
+      recentEl.innerHTML = items.length
+        ? items.map(it => {
+            const when = it.createdAt ? new Date(it.createdAt).toLocaleString('th-TH', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '-';
+            return `<div class="rule-preview-item">
+                <span class="k">${escapeHtml(it.itemCode)} <span style="color:var(--text-dimmer);">· ${escapeHtml(it.createdBy||'?')}</span></span>
+                <span class="v" style="font-size:11px; color:var(--text-dimmer);">${when}</span>
+              </div>`;
+          }).join('')
+        : '<div class="hint">ยังไม่มีรายการที่สร้าง</div>';
+    } catch(err){
+      pendingEl.innerHTML = '<div class="hint" style="color:var(--red);">เชื่อมต่อ Backend ไม่ได้</div>';
+      recentEl.innerHTML = '';
+    }
   }
 
   async function loadPickerGroupList(){
@@ -961,6 +1030,8 @@
   document.getElementById('chatInput').addEventListener('keydown', function(e){
     if(e.key === 'Enter') sendChat();
   });
+
+  loadActivityPanel();
 </script>
 </body>
 </html>

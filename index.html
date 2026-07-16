@@ -258,6 +258,7 @@
   .chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
   .chip-btn{ background:rgba(255,255,255,.06); border:1px solid var(--border-hi); color:var(--text); font-size:12px; padding:8px 14px; border-radius:20px; cursor:pointer; font-family:inherit; }
   .chip-btn:hover{ border-color:var(--violet); color:var(--violet); }
+  .chip-btn.active{ background:linear-gradient(135deg,var(--violet),var(--violet-2)); color:#fff; border-color:transparent; }
 
   .file-card{ display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.06); border:1px solid var(--border-hi); border-radius:14px; padding:10px 13px; font-size:12px; }
   .file-card .fic{ width:30px; height:30px; border-radius:9px; background:var(--red-dim); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;}
@@ -426,34 +427,62 @@
           </div>
         </div>
 
-        <!-- RIGHT: stats / donut -->
+        <!-- RIGHT: stats / donut / structure picker -->
         <div>
-          <div class="stats-card">
-            <div class="stats-head">
-              <h3>สรุปวันนี้</h3>
-              <span class="period-pill">15 ก.ค. 69</span>
-            </div>
-            <div class="donut-wrap">
-              <div class="donut">
-                <div class="donut-center">
-                  <div class="dv">42</div>
-                  <div class="dl">รหัสที่สร้าง</div>
-                </div>
-              </div>
-            </div>
-            <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet)"></span>Piping / เหล็กโครงสร้าง</span><span class="lv">44%</span></div>
-            <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet-2)"></span>อิเล็กทรอนิกส์/Automation</span><span class="lv">21%</span></div>
-            <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--cyan)"></span>เครื่องจักรคลังสินค้า</span><span class="lv">15%</span></div>
-            <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:#4a453f"></span>อื่นๆ</span><span class="lv">20%</span></div>
+          <div style="display:flex; gap:6px; margin-bottom:12px;">
+            <button class="chip-btn active" id="rightTabStats" onclick="showRightPanel('stats')" style="flex:1; text-align:center;">📊 สรุปวันนี้</button>
+            <button class="chip-btn" id="rightTabPicker" onclick="showRightPanel('picker')" style="flex:1; text-align:center;">🧩 เลือกโครงสร้างเอง</button>
           </div>
 
-          <div class="stats-card">
-            <div class="stats-head"><h3>คุณภาพข้อมูล</h3></div>
-            <div class="kpi-row">
-              <div class="kpi-box up"><div class="kn">1,204</div><div class="kl">รหัสในระบบ</div></div>
-              <div class="kpi-box warn"><div class="kn">3</div><div class="kl">พบรหัสซ้ำวันนี้</div></div>
-              <div class="kpi-box up"><div class="kn">100%</div><div class="kl">Verified Hash</div></div>
-              <div class="kpi-box"><div class="kn">19</div><div class="kl">กลุ่มสินค้า</div></div>
+          <div id="rightPanelStats">
+            <div class="stats-card">
+              <div class="stats-head">
+                <h3>สรุปวันนี้</h3>
+                <span class="period-pill">15 ก.ค. 69</span>
+              </div>
+              <div class="donut-wrap">
+                <div class="donut">
+                  <div class="donut-center">
+                    <div class="dv">42</div>
+                    <div class="dl">รหัสที่สร้าง</div>
+                  </div>
+                </div>
+              </div>
+              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet)"></span>Piping / เหล็กโครงสร้าง</span><span class="lv">44%</span></div>
+              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--violet-2)"></span>อิเล็กทรอนิกส์/Automation</span><span class="lv">21%</span></div>
+              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:var(--cyan)"></span>เครื่องจักรคลังสินค้า</span><span class="lv">15%</span></div>
+              <div class="legend-row"><span class="lk"><span class="legend-dot" style="background:#4a453f"></span>อื่นๆ</span><span class="lv">20%</span></div>
+            </div>
+
+            <div class="stats-card">
+              <div class="stats-head"><h3>คุณภาพข้อมูล</h3></div>
+              <div class="kpi-row">
+                <div class="kpi-box up"><div class="kn">1,204</div><div class="kl">รหัสในระบบ</div></div>
+                <div class="kpi-box warn"><div class="kn">3</div><div class="kl">พบรหัสซ้ำวันนี้</div></div>
+                <div class="kpi-box up"><div class="kn">100%</div><div class="kl">Verified Hash</div></div>
+                <div class="kpi-box"><div class="kn">19</div><div class="kl">กลุ่มสินค้า</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="rightPanelPicker" style="display:none;">
+            <div class="stats-card">
+              <div class="stats-head"><h3>ตัวช่วยประกอบรหัส</h3></div>
+              <div class="hint" style="margin-bottom:12px;">เลือกกลุ่มสินค้าและมาตรฐานจากตารางจริง แทนการพิมพ์คุย — เลือกครบแล้วส่งให้ AI ตรวจสอบและยืนยันอีกรอบก่อนสร้างจริง</div>
+              <div class="field">
+                <label>กลุ่มสินค้า</label>
+                <select id="pickerGroupSelect" onchange="onPickerGroupChange()">
+                  <option value="">— เลือกกลุ่มสินค้า —</option>
+                </select>
+              </div>
+              <div id="pickerFieldsContainer"></div>
+              <div id="pickerPreviewWrap" style="display:none;">
+                <div class="code-readout" style="margin-top:14px; padding:16px;">
+                  <div style="font-size:10px; color:var(--text-dimmer); text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px;">รหัสที่ประกอบได้ (ร่าง)</div>
+                  <div id="pickerPreviewCode" class="mono" style="font-size:20px; font-weight:700; color:var(--violet); letter-spacing:1px;">-</div>
+                </div>
+                <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:12px;" onclick="sendPickerToChat()">✓ ส่งให้ AI ตรวจสอบและสร้าง</button>
+              </div>
             </div>
           </div>
         </div>
@@ -536,22 +565,24 @@
         <div>
           <div class="crumb">ItemCode AI / Master Data</div>
           <div class="greet" style="font-size:23px;">Master Data — ทุกรายการ</div>
-          <div class="page-sub">ตารางเดียวกับ Google Sheet เดิม แต่ค้นหา กรอง และแก้ไขผ่านเว็บได้โดยตรง</div>
+          <div class="page-sub">ค้นหา Item Code จริงจากฐานข้อมูล — พิมพ์รหัสหรือรายละเอียดเพื่อกรอง</div>
         </div>
         <div class="btn btn-ghost">⬇ ส่งออกเป็น Excel</div>
       </div>
       <div class="card">
-        <div class="hint">ตัวอย่างมุมมองตาราง — เชื่อมกับ MasterData_General / MasterData_Machine ที่ทำไว้ใน Google Sheet</div>
+        <div class="field" style="margin-bottom:16px;">
+          <input type="text" id="masterSearchInput" placeholder="ค้นหาด้วยรหัส Item Code, กลุ่ม, หรือรายละเอียด..." oninput="filterMasterData()">
+        </div>
+        <div class="hint" id="masterResultCount">กำลังโหลด...</div>
         <div style="overflow-x:auto;">
         <table>
           <thead>
             <tr style="text-align:left; color:var(--text-dim); border-bottom:1px solid var(--border);">
-              <th style="padding:8px 6px;">Item Code</th><th>กลุ่ม</th><th>รายละเอียด</th><th>สถานะ</th><th>แก้ไขล่าสุด</th>
+              <th style="padding:8px 6px;">Item Code</th><th>กลุ่ม</th><th>รายละเอียด</th><th>สถานะ</th><th>สร้างเมื่อ</th>
             </tr>
           </thead>
-          <tbody class="mono">
-            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">PIPE0102.0SC40</td><td>PIPE</td><td style="font-family:'Noto Sans Thai';">ท่อเหล็ก ASTM 2" Sch.40</td><td><span class="badge ok" style="padding:2px 8px;">Active</span></td><td>15/07/2569</td></tr>
-            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">CONV0105020103</td><td>CONV</td><td style="font-family:'Noto Sans Thai';">แผ่นเหล็กประคองมอเตอร์</td><td><span class="badge ok" style="padding:2px 8px;">Active</span></td><td>15/07/2569</td></tr>
+          <tbody class="mono" id="masterTableBody">
+            <tr><td colspan="5" style="padding:12px 6px; color:var(--text-dim);">กำลังโหลด...</td></tr>
           </tbody>
         </table>
         </div>
@@ -594,6 +625,7 @@
     const navItem = document.querySelector('.nav-item[data-screen="'+name+'"]');
     if(navItem) navItem.classList.add('active');
     if(name === 'groups') loadGroupsScreen();
+    if(name === 'master') loadMasterDataScreen();
   }
 
   /* ---------- ดึงข้อมูลกลุ่มสินค้าจริงจาก Firestore (ไม่ใช่ Mockup แล้ว) ---------- */
@@ -681,6 +713,164 @@
   function quickCreateFromAnywhere(promptText){
     showScreen('generate');
     setTimeout(()=> quickReply(promptText || 'สร้างรหัสสินค้าใหม่'), 150);
+  }
+
+  /* ---------- Master Data: ดึงรายการ Item Code จริงจาก Firestore ---------- */
+  const ITEMS_URL = "https://asia-southeast1-itemcode-ai.cloudfunctions.net/getItems";
+  let masterDataCache = [];
+
+  async function loadMasterDataScreen(){
+    document.getElementById('masterResultCount').textContent = 'กำลังโหลด...';
+    document.getElementById('masterTableBody').innerHTML = '<tr><td colspan="5" style="padding:12px 6px; color:var(--text-dim);">กำลังโหลด...</td></tr>';
+    try {
+      const res = await fetch(ITEMS_URL);
+      const data = await res.json();
+      if(data.error){
+        document.getElementById('masterResultCount').textContent = 'โหลดไม่สำเร็จ: ' + data.error;
+        document.getElementById('masterTableBody').innerHTML = '';
+        return;
+      }
+      masterDataCache = data.items || [];
+      renderMasterDataRows(masterDataCache);
+    } catch(err){
+      document.getElementById('masterResultCount').textContent = 'เชื่อมต่อ Backend ไม่ได้';
+      document.getElementById('masterTableBody').innerHTML = '';
+    }
+  }
+
+  function renderMasterDataRows(items){
+    const body = document.getElementById('masterTableBody');
+    document.getElementById('masterResultCount').textContent = 'พบ ' + items.length + ' รายการ';
+    if(!items.length){
+      body.innerHTML = '<tr><td colspan="5" style="padding:12px 6px; color:var(--text-dim);">ไม่พบรายการ</td></tr>';
+      return;
+    }
+    body.innerHTML = items.map(it => {
+      const desc = it.description_th || [it.standard_mapping, it.size_mm, it.thickness_mm ? it.thickness_mm+'มม.' : ''].filter(Boolean).join(' · ');
+      const created = it.createdAt ? new Date(it.createdAt).toLocaleDateString('th-TH') : '-';
+      return `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:8px 6px;">${escapeHtml(it.itemCode)}</td>
+          <td>${escapeHtml(it.group || '-')}</td>
+          <td style="font-family:'Noto Sans Thai';">${escapeHtml(desc)}</td>
+          <td><span class="badge ok" style="padding:2px 8px;">${escapeHtml(it.status || 'Active')}</span></td>
+          <td>${created}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function filterMasterData(){
+    const q = document.getElementById('masterSearchInput').value.trim().toLowerCase();
+    if(!q){ renderMasterDataRows(masterDataCache); return; }
+    const filtered = masterDataCache.filter(it => {
+      const haystack = [it.itemCode, it.group, it.description_th, it.standard_mapping]
+        .filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+    renderMasterDataRows(filtered);
+  }
+
+  /* ---------- ตัวช่วยประกอบรหัสแบบ Manual (แดชบอร์ดขวามือ) ---------- */
+  let pickerGroupsCache = [];
+  let pickerCurrentGroup = null;
+
+  function showRightPanel(which){
+    document.getElementById('rightPanelStats').style.display = which==='stats' ? '' : 'none';
+    document.getElementById('rightPanelPicker').style.display = which==='picker' ? '' : 'none';
+    document.getElementById('rightTabStats').classList.toggle('active', which==='stats');
+    document.getElementById('rightTabPicker').classList.toggle('active', which==='picker');
+    if(which==='picker' && pickerGroupsCache.length===0) loadPickerGroupList();
+  }
+
+  async function loadPickerGroupList(){
+    const select = document.getElementById('pickerGroupSelect');
+    try {
+      const res = await fetch(GROUPS_URL);
+      const data = await res.json();
+      pickerGroupsCache = data.groups || [];
+      select.innerHTML = '<option value="">— เลือกกลุ่มสินค้า —</option>' +
+        pickerGroupsCache.map(g => `<option value="${escapeHtml(g.code)}">${escapeHtml(g.code)} — ${escapeHtml(g.name||'')}</option>`).join('');
+    } catch(err){
+      select.innerHTML = '<option value="">โหลดกลุ่มไม่สำเร็จ</option>';
+    }
+  }
+
+  async function onPickerGroupChange(){
+    const code = document.getElementById('pickerGroupSelect').value;
+    const fieldsContainer = document.getElementById('pickerFieldsContainer');
+    const previewWrap = document.getElementById('pickerPreviewWrap');
+    if(!code){ fieldsContainer.innerHTML=''; previewWrap.style.display='none'; pickerCurrentGroup=null; return; }
+    fieldsContainer.innerHTML = '<div class="hint">กำลังโหลดโครงสร้าง...</div>';
+    try {
+      const res = await fetch(GROUPS_URL + '?code=' + encodeURIComponent(code));
+      const data = await res.json();
+      if(data.error){ fieldsContainer.innerHTML = '<div class="hint" style="color:var(--red);">'+escapeHtml(data.error)+'</div>'; return; }
+      pickerCurrentGroup = data.group;
+      renderPickerFields(data.group);
+    } catch(err){
+      fieldsContainer.innerHTML = '<div class="hint" style="color:var(--red);">เชื่อมต่อ Backend ไม่ได้</div>';
+    }
+  }
+
+  function renderPickerFields(group){
+    const fieldsContainer = document.getElementById('pickerFieldsContainer');
+    const segments = (group.digitStructure || []).filter(d => d.position !== '1-4');
+    let html = '';
+    segments.forEach((seg, idx) => {
+      const isStandardField = /มาตรฐาน/.test(seg.meaning) && (group.standardCodeTable || []).length > 0;
+      const fieldId = 'pickerField_' + idx;
+      if(isStandardField){
+        const options = group.standardCodeTable.map(e =>
+          `<option value="${escapeHtml(e.code)}" data-label="${escapeHtml((e.grade||e.standard||''))}">${escapeHtml(e.code)} — ${escapeHtml(e.standard||'')}${e.grade? ' '+escapeHtml(e.grade):''}</option>`
+        ).join('');
+        html += `<div class="field">
+            <label>หลัก ${escapeHtml(seg.position)} — ${escapeHtml(seg.meaning)}</label>
+            <select id="${fieldId}" data-fixed-length="${seg.position.includes('-')?'':''}" onchange="updatePickerPreview()">
+              <option value="">— เลือก —</option>${options}
+            </select>
+          </div>`;
+      } else {
+        html += `<div class="field">
+            <label>หลัก ${escapeHtml(seg.position)} — ${escapeHtml(seg.meaning)}</label>
+            <input type="text" id="${fieldId}" placeholder="${escapeHtml(seg.meaning)}" oninput="updatePickerPreview()">
+          </div>`;
+      }
+    });
+    fieldsContainer.innerHTML = html;
+    document.getElementById('pickerPreviewWrap').style.display = '';
+    updatePickerPreview();
+  }
+
+  function updatePickerPreview(){
+    if(!pickerCurrentGroup) return;
+    const segments = (pickerCurrentGroup.digitStructure || []).filter(d => d.position !== '1-4');
+    let code = pickerCurrentGroup.code;
+    let complete = true;
+    segments.forEach((seg, idx) => {
+      const el = document.getElementById('pickerField_' + idx);
+      const val = el ? el.value.trim() : '';
+      if(!val) complete = false;
+      code += val || '····';
+    });
+    document.getElementById('pickerPreviewCode').textContent = code;
+    document.getElementById('pickerPreviewCode').style.color = complete ? 'var(--cyan)' : 'var(--violet)';
+  }
+
+  function sendPickerToChat(){
+    if(!pickerCurrentGroup) return;
+    const segments = (pickerCurrentGroup.digitStructure || []).filter(d => d.position !== '1-4');
+    const parts = [];
+    segments.forEach((seg, idx) => {
+      const el = document.getElementById('pickerField_' + idx);
+      if(!el) return;
+      let displayVal = el.value;
+      if(el.tagName === 'SELECT' && el.selectedOptions[0]){
+        displayVal = el.selectedOptions[0].textContent;
+      }
+      if(displayVal) parts.push(seg.meaning + ': ' + displayVal);
+    });
+    const message = `ช่วยตรวจสอบและสร้าง Item Code กลุ่ม ${pickerCurrentGroup.code} (${pickerCurrentGroup.name}) จากที่เลือกไว้: ${parts.join(', ')}`;
+    showRightPanel('stats');
+    askAI(message);
   }
 
   /* ---------- Chat assistant logic ---------- */
